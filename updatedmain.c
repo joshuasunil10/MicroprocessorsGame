@@ -78,7 +78,7 @@ int main()
 		{
 			projectile(x,y);
 		}
-		if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
+		/*if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
 		{			
 			if (y > 16)
 			{
@@ -86,7 +86,7 @@ int main()
 				vmoved = 1;
 				vinverted = 0;
 			}
-		}
+		}*/
 		if ((vmoved) || (hmoved))
 		{
 			// only redraw if there has been some movement (reduces flicker)
@@ -216,13 +216,11 @@ int projectile(int x, int y)
 {	
 	int oldx;
 	int oldy;
-
-	while(1)
 	{
-		fillRectangle(oldx,oldy,21,21,0);
-		x = x + 2;
-		fillRectangle(x+0, y+3, 1,3,RGBToWord(255,255,255));
 		oldx = x;
 		oldy = y;
+		fillRectangle(oldx,oldy,1,3,0);
+		x = x + 2;
+		fillRectangle(x, y+3, 1,3,RGBToWord(255,255,255));
 	}
 }
