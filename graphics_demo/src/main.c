@@ -8,7 +8,7 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-void projectile(int x, int y);
+void endgame();
 
 volatile uint32_t milliseconds;
 
@@ -163,7 +163,13 @@ int main()
 			objactive=0;
 			}
 		}
-		//detects if the meteor has been hit
+		//detects if the meteor has hit the ship
+		if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
+			{
+				endgame();
+			}
+			
+		//detects if the meteor has been hit by a missile
 		if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
 			{
 				fillRectangle(objx,objy,10,10,RGBToWord(0,0,0));
@@ -172,7 +178,7 @@ int main()
 				projx=0;
 				projy=0;
 			}
-		delay(10);
+		delay(15);
 	}
 	return 0;
 }
@@ -267,20 +273,11 @@ void setupIO()
 	enablePullUp(GPIOA,8);
 }
 
-void projectile(int x, int y)
+void endgame()
 {	
-	int oldx;
-	int oldy;
-	x=x+10;
-	y=y-3;
-	while(y>20)
+	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
+	while(1)
 	{
-		delay(10);
-		oldx = x;
-		oldy = y;
-		y = y - 2;
-		fillRectangle(x, y, 1,5,RGBToWord(255,255,255));
-		fillRectangle(oldx,oldy,1,5,RGBToWord(0,0,0));
-		
+		printTextX2("MORTIS", 10, 20, RGBToWord(0xff,0xff,0), 0);
 	}
 }
