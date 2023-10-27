@@ -1,5 +1,12 @@
 #include <stm32f031x6.h>
 #include "display.h"
+#include <stdio.h>
+#include "musicalnotes.h"
+#include "sound.h"
+#include <stdlib.h>
+#include <time.h>
+
+
 void initClock(void);
 void initSysTick(void);
 void SysTick_Handler(void);
@@ -8,7 +15,9 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-void endgame();
+void endgame(int x);
+void printscore(int x);
+int btn1pressed();
 
 volatile uint32_t milliseconds;
 
@@ -35,6 +44,7 @@ const uint16_t dg1[]=
 };
 
 
+	
 int main()
 {
 	int projactive = 0;//Projectile toggle
@@ -59,6 +69,10 @@ int main()
 	uint16_t objx = 0;
 	uint16_t objy = 0;
 	uint16_t oldobjy = objy;// only moves down so no need for x update
+
+	//score variable
+	uint16_t score = 0;
+
 	
 	//game startup
 	initClock();
@@ -66,6 +80,9 @@ int main()
 	setupIO();
 	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
 	putImage(x,y,21,21,virt,0,0);
+
+	srand(time(NULL));
+	
 	while(1)
 	{
 		hmoved = 0;
@@ -126,10 +143,7 @@ int main()
 				toggle = toggle ^ 1;
 			}*/
 			// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
-			if (isInside(50,80,12,16,x,y) || isInside(50,80,12,16,x+12,y) || isInside(50,80,12,16,x,y+16) || isInside(50,80,12,16,x+12,y+16) )
-			{
-				printTextX2("GLUG!", 10, 20, RGBToWord(0xff,0xff,0), 0);
-			}
+			
 		}
 		if(projactive==1)
 		{
@@ -150,6 +164,9 @@ int main()
 			objactive=1;
 			objx=x+6;
 			objy=5;
+			objactive = 1;
+            objx = rand() % (192 - 21);  // Generate a random x-coordinate for the meteor
+            objy = 5;
 		}
 		if(objactive==1)
 		{
@@ -166,7 +183,10 @@ int main()
 		//detects if the meteor has hit the ship
 		if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
 			{
-				endgame();
+				
+					endgame(score);	
+				
+			
 			}
 			
 		//detects if the meteor has been hit by a missile
@@ -177,6 +197,9 @@ int main()
 				projactive=0;
 				projx=0;
 				projy=0;
+				
+				score = score + 1;
+				
 			}
 		delay(15);
 	}
@@ -273,11 +296,33 @@ void setupIO()
 	enablePullUp(GPIOA,8);
 }
 
-void endgame()
-{	
-	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
+void endgame(int x)
+{
+    fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
+    
+   
+	
+
 	while(1)
 	{
-		printTextX2("MORTIS", 10, 20, RGBToWord(0xff,0xff,0), 0);
+        	//FLASHING !
+		// Print "Game Over!" message
+        printTextX2("Game Over!", 5, 20, RGBToWord(255, 0, 0), 0);
+		// Print "Game Over!" message
+		delay(90);
+        printTextX2("Game Over!", 5, 20, RGBToWord(0, 0, 0), 0);
+
+        // Convert the integer x to a string
+        char scoreText[20];  // Make sure the buffer is large enough to hold the text
+        sprintf(scoreText, "Score: %d", x);
+
+        // Print the score text
+        printText(scoreText, 33, 40, RGBToWord(0, 255, 0), 0);
+
 	}
+
+		
+    
+
+
 }
