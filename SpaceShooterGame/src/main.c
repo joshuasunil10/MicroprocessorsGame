@@ -59,13 +59,19 @@ const uint16_t dg1[]=
 
 int main()
 {
-	startgame();
 	game();
-
 }
 	
 void game()
 {
+	initClock();
+	initSysTick();
+	setupIO();
+	initSound();
+	playNote(100);
+
+	while(1)
+	{
 	int projactive = 0;//Projectile toggle
 	int objactive = 0;//meteor toggle, might make it able to create multiple using arrays just one for now
 
@@ -91,140 +97,127 @@ void game()
 
 	//score variable
 	uint16_t score = 0;
-
 	
-	//game startup
-	initClock();
-	initSysTick();
-	setupIO();
-	// start game 
-
 	startgame();
 	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
 	putImage(x,y,21,21,virt,0,0); // Game starting point
 
 	srand(time(NULL));
-	
-	while(1)
-	{
-		hmoved = 0;
-		if ((GPIOB->IDR & (1 << 4))==0) // right pressed
-		{					
-			if (x < 102)
-			{
-				x = x + 2;
-				hmoved = 1;
-			}						
-		}
-		if ((GPIOB->IDR & (1 << 5))==0) // left pressed
-		{			
-			
-			if (x > 3)
-			{
-				x = x - 2;
-				hmoved = 1;
-			}			
-		}
-		if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive==0) // down pressed and no projectile active
-		{
-			projactive=1;//activates projectile
-			projx=x+10;
-			projy=y-5;
-		}
-		/*if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
-		{			
-			if (y > 16)
-			{
-				y = y - 2;
-				vmoved = 1;
-				vinverted = 0;
-			}
-		}*/
-		if ((hmoved))
-		{
-			// only redraw if there has been some movement (reduces flicker)
-			fillRectangle(oldx,oldy,21,21,0);
-			oldx = x;
-			oldy = y;					
-			if (hmoved)
-			{
-				if (toggle)
-					putImage(x,y,21,21,virt,0,0);
-				else
-					putImage(x,y,21,21,virtani,0,0);
-				
-				toggle = toggle ^ 1;
-			}
-			/*else
-			{			
-			if (toggle)
-					putImage(x,y,21,21,virt,0,vinverted);
-				else
-					putImage(x,y,21,21,virtani,0,vinverted);
-				
-				toggle = toggle ^ 1;
-			}*/
-			// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
-			
-		}
-		if(projactive==1)
-		{
-			//projectile movement 
-			oldprojy=projy;
-			projy=projy-2;
-			fillRectangle(projx,oldprojy,1,5,RGBToWord(0,0,0));
-			fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
-			if (projy==0)
-			{
-			//checks to see if the projectile has reached the top of the screen
-			fillRectangle(projx,projy,1,5,RGBToWord(0,0,0));
-			projactive=0;//allows new projectile to be made
-			}
-		}	
-		if(objactive==0)
-		{
-			objactive=1;
-			objx=x+6;
-			objy=5;
-			objactive = 1;
-            objx = rand() % (192 - 21);  // Generate a random x-coordinate for the meteor
-            objy = 5;
-		}
-		if(objactive==1)
-		{
-			oldobjy=objy;
-			objy++;
-			fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
-			fillRectangle(objx, objy, 5,5,RGBToWord(255,128,0));
-			if(objy>140)
-			{
-			fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
-			objactive=0;
-			}
-		}
-		//detects if the meteor has hit the ship
-		if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
-			{
-				
-					endgame(score);	
-					//score = endgame(score);
 
-			}	
-		//detects if the meteor has been hit by a missile
-		if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
-			{
-				fillRectangle(objx,objy,15,15,RGBToWord(0,0,0));
-				objactive=0;
-				projactive=0;
-				projx=0;
-				projy=0;
+		while(1)
+		{
+			hmoved = 0;
+			if ((GPIOB->IDR & (1 << 4))==0) // right pressed
+			{					
+				if (x < 102)
+				{
+					x = x + 2;
+					hmoved = 1;
+				}						
+			}
+			if ((GPIOB->IDR & (1 << 5))==0) // left pressed
+			{			
 				
-				score = score + 1;
+				if (x > 3)
+				{
+					x = x - 2;
+					hmoved = 1;
+				}			
+			}
+			if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive==0) // down pressed and no projectile active
+			{
+				projactive=1;//activates projectile
+				projx=x+10;
+				projy=y-5;
+			}
+			/*if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
+			{			
+				if (y > 16)
+				{
+					y = y - 2;
+					vmoved = 1;
+					vinverted = 0;
+				}
+			}*/
+			if ((hmoved))
+			{
+				// only redraw if there has been some movement (reduces flicker)
+				fillRectangle(oldx,oldy,21,21,0);
+				oldx = x;
+				oldy = y;					
+				if (hmoved)
+				{
+					if (toggle)
+						putImage(x,y,21,21,virt,0,0);
+					else
+						putImage(x,y,21,21,virtani,0,0);
+					
+					toggle = toggle ^ 1;
+				}
+
+				// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
 				
 			}
-		delay(15);
+			if(projactive==1)
+			{
+				//projectile movement 
+				oldprojy=projy;
+				projy=projy-2;
+				fillRectangle(projx,oldprojy,1,5,RGBToWord(0,0,0));
+				fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
+				if (projy==0)
+				{
+				//checks to see if the projectile has reached the top of the screen
+				fillRectangle(projx,projy,1,5,RGBToWord(0,0,0));
+				projactive=0;//allows new projectile to be made
+				}
+			}	
+			if(objactive==0)
+			{
+				objactive=1;
+				objx=x+6;
+				objy=5;
+				objactive = 1;
+				objx = rand() % (127 - 5);  // Generate a random x-coordinate for the meteor
+				objy = 5;
+			}
+			if(objactive==1)
+			{
+				oldobjy=objy;
+				objy++;
+				fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
+				fillRectangle(objx, objy, 5,5,RGBToWord(255,128,0));
+				if(objy>140)
+				{
+				fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
+				objactive=0;
+				}
+			}
+			//detects if the meteor has hit the ship
+			if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
+				{
+					
+						endgame(score);	
+						break;
+						//score = endgame(score);
+
+				}	
+			//detects if the meteor has been hit by a missile
+			if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
+				{
+					fillRectangle(objx,objy,15,15,RGBToWord(0,0,0));
+					objactive=0;
+					projactive=0;
+					projx=0;
+					projy=0;
+					
+					score = score + 1;
+					
+				}
+			delay(15);
+		}
 	}
-	return 0;
+	
 }
 void initSysTick(void)
 {
@@ -361,24 +354,18 @@ int endgame(int x)
 
 		printText("Try Again?", 27, 90, RGBToWord(0,255,0),0);
 		printText("Press Down?", 27, 100, RGBToWord(0,0,255),0);
+		
 
 		
 
-			while  ((GPIOA->IDR & (1 << 11)) == 0)
+			while  ((GPIOA->IDR & (1 << 11)) !=0 )
 			{
-			
-				playNote(E3);	
+			playNote(E3);
+			delay(40);
+					
 			
 			}
-			
-			if((GPIOA->IDR & (1 << 11)) == 0)
-			{
-			startgame();
-			}
+		delay(100);
+		break;
 	    }
-
-		
-    
-
-
 }
