@@ -370,6 +370,11 @@ int endgame(int x)
 				playNote(E3);	
 			
 			}
+			
+			if((GPIOA->IDR & (1 << 11)) == 0)
+			{
+			startgame();
+			}
 	    }
 
 		
