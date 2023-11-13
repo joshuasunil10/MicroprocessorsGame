@@ -28,7 +28,7 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-int endgame(int x);
+void endgame(int x);
 void printscore(int x);
 void startgame();
 void game();
@@ -124,21 +124,12 @@ void game()
 					hmoved = 1;
 				}			
 			}
-			if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive==0) // down pressed and no projectile active
+			if ( (GPIOA->IDR & (1 << 8)) == 0 && projactive==0) // up pressed and no projectile active
 			{
 				projactive=1;//activates projectile
 				projx=x+10;
 				projy=y-5;
 			}
-			/*if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
-			{			
-				if (y > 16)
-				{
-					y = y - 2;
-					vmoved = 1;
-					vinverted = 0;
-				}
-			}*/
 			if ((hmoved))
 			{
 				// only redraw if there has been some movement (reduces flicker)
@@ -178,7 +169,7 @@ void game()
 				objx=x+6;
 				objy=5;
 				objactive = 1;
-				objx = rand() % (127 - 5);  // Generate a random x-coordinate for the meteor
+				objx = rand() % (145-5);  // Generate a random x-coordinate for the meteor
 				objy = 5;
 			}
 			if(objactive==1)
@@ -186,7 +177,7 @@ void game()
 				oldobjy=objy;
 				objy++;
 				fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
-				fillRectangle(objx, objy, 5,5,RGBToWord(255,128,0));
+				fillRectangle(objx,objy,5,5,RGBToWord(255,128,0));
 				if(objy>140)
 				{
 				fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
@@ -320,10 +311,10 @@ void startgame()
         printTextX2("Space", 21, 20, RGBToWord(255, 0, 0), 0);
 		printTextX2("Shooter!", 21, 35, RGBToWord(255, 0, 255), 0);
 
-		printText("Press Down", 27, 90, RGBToWord(0, 255, 0), 0);
+		printText("Press Up", 27, 90, RGBToWord(0, 255, 0), 0);
 		printText("to Begin!", 27, 100, RGBToWord(0, 0, 255), 0);
 
-		if  ((GPIOA->IDR & (1 << 11)) == 0)
+		if  ((GPIOA->IDR & (1 << 8)) == 0)
 		{	
 			
 			break;
@@ -332,7 +323,7 @@ void startgame()
 		
 }
 
-int endgame(int x)
+void endgame(int x)
 {
     fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
     
@@ -353,7 +344,7 @@ int endgame(int x)
         printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
 
 		printText("Try Again?", 27, 90, RGBToWord(0,255,0),0);
-		printText("Press Down?", 27, 100, RGBToWord(0,0,255),0);
+		printText("Press Down", 27, 100, RGBToWord(0,0,255),0);
 		
 
 		
@@ -369,3 +360,4 @@ int endgame(int x)
 		break;
 	    }
 }
+

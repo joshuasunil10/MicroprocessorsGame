@@ -183,7 +183,7 @@ uint8_t transferSPI8(uint8_t data)
     *preg = data;
     Timeout = 1000000;
     while (((SPI1->SR & (1 << 7))!=0)&&(Timeout--));        
-	  ReturnValue = *preg;	
+	ReturnValue = *preg;	
     return ReturnValue;
 }
 
