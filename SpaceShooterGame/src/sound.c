@@ -12,24 +12,16 @@ void playNote(uint32_t Freq)
 
 void initSound()
 {
-    // Power up the timer module
-    RCC->APB1ENR |= (1 << 8);
-
-    // Configure PF0 as an alternate function for PWM output
-    GPIOF->MODER &= ~(3U << (2 * 0)); // Clear the bits for PF0
-    GPIOF->MODER |= (2U << (2 * 0)); // Set PF0 to alternate function mode
-    GPIOF->AFR[0] &= ~(0xFU << (4 * 0)); // Clear the bits for AF0 (TIM14) on PF0
-
-    TIM14->CR1 = 0; // Set Timer 14 to default values
-    TIM14->CCMR1 = (1 << 6) + (1 << 5);
-    TIM14->CCER |= (1 << 0);
-    TIM14->PSC = 48000000UL / 65536UL; // Use the prescaler to set the counter running at 65536 Hz
-
-    // Configure ARR and CCR1 based on desired note frequency
-    // Assuming C4 (you may need to adjust the frequency accordingly)
-    uint32_t desiredFrequency = 261.63; // C4 frequency in Hz
-    TIM14->ARR = 48000000UL / (TIM14->PSC * desiredFrequency);
-    TIM14->CCR1 = TIM14->ARR / 2;
-
-    TIM14->CNT = 0;
+	// Power up the timer module
+	RCC->APB1ENR |= (1 << 8);
+	pinMode(GPIOB,1,2); // Assign a non-GPIO (alternate) function to GPIOB bit 1
+	GPIOB->AFR[0] &= ~(0x0fu << 4); // Assign alternate function 0 to GPIOB 1 (Timer 14 channel 1)
+	TIM14->CR1 = 0; // Set Timer 14 to default values
+	TIM14->CCMR1 = (1 << 6) + (1 << 5);
+	TIM14->CCER |= (1 << 0);
+	TIM14->PSC = 48000000UL/65536UL; // Use the prescaled to set the counter running at 65536 Hz
+									 // yields maximum frequency of 21kHz when ARR = 2;
+	TIM14->ARR = (48000000UL/(uint32_t)(TIM14->PSC))/((uint32_t)256);
+	TIM14->CCR1 = TIM14->ARR/2;	
+	TIM14->CNT = 0;
 }
