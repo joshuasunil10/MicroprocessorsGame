@@ -17,7 +17,7 @@ Microporcessors Module Coursework - TU857/2
 #include "musicalnotes.h"
 #include "sound.h"
 #include <stdlib.h>
-#include <time.h>
+#include "serial.h"
 
 // FUNCTIONS
 void initClock(void);
@@ -31,10 +31,13 @@ void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
 void endgame(int x);
 void printscore(int x);
 void startgame();
+void log(char log[]);
+void theme();
 void game();
 
 volatile uint32_t milliseconds;
 
+// ASSET GENERATION
 const uint16_t virt[]=
 {
 0,0,0,0,0,0,0,0,0,27482,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,27482,27482,3163,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,120,120,25037,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,50497,160,160,58101,42040,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,17993,168,168,58093,33856,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,9801,152,152,17066,34377,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,51986,26682,59209,128,128,17049,9793,27482,53018,0,0,0,0,0,0,0,0,0,0,0,46612,31005,27482,42569,176,176,41914,50769,27482,39197,46612,0,0,0,0,0,0,0,0,0,27482,19290,27482,62364,9801,176,176,33466,34121,62364,27482,27482,27482,0,0,0,0,0,0,0,27482,27482,62364,62364,62364,1609,128,128,24961,9545,62364,62364,62364,27482,27482,0,0,0,0,0,3171,62364,27482,62364,62364,29605,34361,61051,61051,46245,1593,62364,62364,62364,27482,62364,27482,0,0,0,27482,62364,62364,27482,3584,3584,3584,25897,793,793,49944,34089,3584,3584,3584,27482,62364,62364,27482,0,27482,62364,62364,62364,27482,3584,3584,3584,34064,9785,9785,51001,33800,61184,3584,3584,27482,62364,62364,62364,27482,2816,2816,2816,2816,2816,62364,62364,62364,1577,19290,19290,36203,50465,62364,62364,62364,2816,2816,2816,2816,2816,0,0,0,0,0,62364,62364,62364,26161,36996,36996,28804,50473,62364,62364,62364,0,0,0,0,0,0,0,0,0,0,50960,12544,61440,33544,10050,10050,59193,58112,45312,12288,26401,0,0,0,0,0,0,0,0,0,0,27755,28011,2114,29869,0,0,0,20355,11090,2642,44667,0,0,0,0,0,0,0,0,0,0,15982,53273,21010,24327,0,0,0,24327,53273,4113,24327,0,0,0,0,0,0,0,0,0,0,32327,15873,57092,24327,0,0,0,40527,24066,16131,24327,0,0,0,0,0,0,0,0,0,0,24327,32518,7703,24327,0,0,0,24327,24334,24367,24327,0,0,0,0,0,0,0,0,0,0,0,48503,24327,0,0,0,0,0,24327,24327,0,0,0,0,0,0,
@@ -57,21 +60,31 @@ const uint16_t dg1[]=
 	0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,
 };
 
+// MAIN FUNCTION
 int main()
-{
+{	
+	//initialises game setup
+	gameSetup();
+	
+	//main game function
 	game();
 }
-	
-void game()
+
+void gameSetup()
 {
 	initClock();
 	initSysTick();
 	setupIO();
 	initSound();
-	playNote(100);
+	initSerial();
+}
+	
+void game()
+{
 
 	while(1)
 	{
+	
 	int projactive = 0;//Projectile toggle
 	int objactive = 0;//meteor toggle, might make it able to create multiple using arrays just one for now
 
@@ -97,12 +110,19 @@ void game()
 
 	//score variable
 	uint16_t score = 0;
+
 	
+	// calls the start game 
 	startgame();
+	
+	char GameStartLog[] = {"Game has started"};
+
 	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
 	putImage(x,y,21,21,virt,0,0); // Game starting point
 
-	srand(time(NULL));
+	//srand(time(NULL));
+
+	log(GameStartLog);
 
 		while(1)
 		{
@@ -124,11 +144,11 @@ void game()
 					hmoved = 1;
 				}			
 			}
-			if ( (GPIOA->IDR & (1 << 8)) == 0 && projactive==0) // up pressed and no projectile active
+			if ( (GPIOA->IDR & (1 << 8)) == 0 && projactive == 0) // up pressed and no projectile active
 			{
-				projactive=1;//activates projectile
-				projx=x+10;
-				projy=y-5;
+				projactive = 1;//activates projectile
+				projx = x + 10;
+				projy = y - 5;
 			}
 			if ((hmoved))
 			{
@@ -152,9 +172,9 @@ void game()
 			if(projactive==1)
 			{
 				//projectile movement 
-				oldprojy=projy;
-				projy=projy-2;
-				fillRectangle(projx,oldprojy,1,5,RGBToWord(0,0,0));
+				oldprojy = projy;
+				projy = projy-2;
+				fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
 				fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
 				if (projy==0)
 				{
@@ -169,7 +189,7 @@ void game()
 				objx=x+6;
 				objy=5;
 				objactive = 1;
-				objx = rand() % (145-5);  // Generate a random x-coordinate for the meteor
+				objx = rand() % 80+10;  // Generate a random x-coordinate for the meteor
 				objy = 5;
 			}
 			if(objactive==1)
@@ -185,25 +205,21 @@ void game()
 				}
 			}
 			//detects if the meteor has hit the ship
-			if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
+			if (isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) )
 				{
-					
-						endgame(score);	
-						break;
-						//score = endgame(score);
-
+					endgame(score);	
+					break;
 				}	
+
 			//detects if the meteor has been hit by a missile
 			if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
 				{
-					fillRectangle(objx,objy,15,15,RGBToWord(0,0,0));
+					fillRectangle(objx,objy,30,30,RGBToWord(0,0,0));
 					objactive=0;
 					projactive=0;
 					projx=0;
 					projy=0;
-					
 					score = score + 1;
-					
 				}
 			delay(15);
 		}
@@ -286,7 +302,7 @@ int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint
 	}
 	return rvalue;
 }
-
+// IO SETUP
 void setupIO()
 {
 	RCC->AHBENR |= (1 << 18) + (1 << 17); // enable Ports A and B
@@ -300,23 +316,25 @@ void setupIO()
 	enablePullUp(GPIOA,11);
 	enablePullUp(GPIOA,8);
 }
-
+// function to start game
 void startgame()
 {
 	fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
     
 	while(1)
 		{
-        
+        // DISPLAY TITLE	
         printTextX2("Space", 21, 20, RGBToWord(255, 0, 0), 0);
 		printTextX2("Shooter!", 21, 35, RGBToWord(255, 0, 255), 0);
-
+		// PLAYER TITLE
 		printText("Press Up", 27, 90, RGBToWord(0, 255, 0), 0);
 		printText("to Begin!", 27, 100, RGBToWord(0, 0, 255), 0);
+		// AUTHOR
+		printText("by Harry & Josh", 17, 119, RGBToWord(0,255,0),0);
 
+		// when up is pressed, start the game
 		if  ((GPIOA->IDR & (1 << 8)) == 0)
 		{	
-			
 			break;
 		}
 		}
@@ -351,7 +369,7 @@ void endgame(int x)
 
 			while  ((GPIOA->IDR & (1 << 11)) !=0 )
 			{
-			playNote(E3);
+		
 			delay(40);
 					
 			
@@ -360,4 +378,18 @@ void endgame(int x)
 		break;
 	    }
 }
+// Serial Logger
+void log(char log[])
+{
+    // Serial Commiunication
+    //log telling the user that the System has been intilised.
+    int i = 0;
+    while(log[i] != '\0')
+    {
+        eputchar(log[i]);
+        i++;
+    }
+    eputs("\r\n");
+}
+
 
