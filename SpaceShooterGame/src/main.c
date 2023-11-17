@@ -185,7 +185,7 @@ void game()
 				}
 			}
 			//detects if the meteor has hit the ship
-			if (isInside(objx,objy,21,21,x,y) || isInside(objx,objy,21,11,x+21,y) || isInside(objx,objy,21,11,x,y+11) || isInside(objx,objy,21,11,x+21,y+11) )
+			if (isInside(x,y,21,21,objx,objy)/*change rest to this*/ || isInside(objx,objy,21,21,x+21,y) || isInside(objx,objy,21,21,x,y+21) || isInside(objx,objy,21,21,x+21,y+21) )
 				{
 					
 						endgame(score);	
