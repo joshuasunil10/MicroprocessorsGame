@@ -402,5 +402,3 @@ void log(char log[])
     }
     eputs("\r\n");
 }
-
-
