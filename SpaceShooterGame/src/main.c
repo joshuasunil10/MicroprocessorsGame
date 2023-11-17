@@ -81,6 +81,7 @@ void gameSetup()
 	
 void game()
 {
+	int shields = 3;
 
 	while(1)
 	{
@@ -207,8 +208,18 @@ void game()
 			//detects if the meteor has hit the ship
 			if (isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) )
 				{
-					endgame(score);	
-					break;
+					//if you have lives left you lose them rather then losing the game
+					if(shields>0)
+					{
+						shields--;
+						objactive=0;
+					}
+					else
+					{
+						endgame(score);	
+						break;	
+					}
+					
 				}	
 
 			//detects if the meteor has been hit by a missile
