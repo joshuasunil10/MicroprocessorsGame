@@ -124,6 +124,10 @@ void game()
 	//srand(time(NULL));
 
 	log(GameStartLog);
+		LedOn(9);
+		LedOn(10);
+		LedOn(12);
+		
 
 		while(1)
 		{
@@ -322,6 +326,9 @@ void setupIO()
 	pinMode(GPIOB,5,0);
 	pinMode(GPIOA,8,0);
 	pinMode(GPIOA,11,0);
+	pinMode(GPIOA,9,1); // Make GPIOA bit 0 an output
+	pinMode(GPIOA,10,1); // Make GPIOA bit 1 an output
+	pinMode(GPIOA,12,1); // Make GPIOA bit 2 an output
 	enablePullUp(GPIOB,4);
 	enablePullUp(GPIOB,5);
 	enablePullUp(GPIOA,11);
@@ -389,6 +396,17 @@ void endgame(int x)
 		break;
 	    }
 }
+void LedOn(int Led)
+{
+	GPIOA->ODR = GPIOA->ODR | (Led<<0);
+}
+
+void LedOff(int Led)
+{
+	GPIOA->ODR = GPIOA->ODR & ~(Led<<0);
+}
+
+
 // Serial Logger
 void log(char log[])
 {
