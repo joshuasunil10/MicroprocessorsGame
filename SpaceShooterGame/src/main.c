@@ -63,7 +63,7 @@ const uint16_t dg1[]=
 // MAIN FUNCTION
 int main()
 {	
-	//initialises game setup
+
 	gameSetup();
 	
 	//main game function
@@ -81,7 +81,7 @@ void gameSetup()
 	
 void game()
 {
-	int shields = 3;
+
 
 	while(1)
 	{
@@ -124,13 +124,30 @@ void game()
 	//srand(time(NULL));
 
 	log(GameStartLog);
-		LedOn(9);
-		LedOn(10);
-		LedOn(12);
 		
-
+		int shields = 3;
 		while(1)
 		{
+			switch (shields)
+			{
+			case (0):
+				LedOff(12);
+				break;
+			case(1):
+				LedOff(10);
+				break;
+			case(2):
+				LedOff(9);
+				break;
+			case(3):
+				LedOn(9);
+				LedOn(10);
+				LedOn(12);
+				break;
+			default:
+				break;
+			}
+
 			hmoved = 0;
 			if ((GPIOB->IDR & (1 << 4))==0) // right pressed
 			{					
@@ -238,6 +255,7 @@ void game()
 				}
 			delay(15);
 		}
+		
 	}
 	
 }
@@ -381,7 +399,6 @@ void endgame(int x)
 
 		printText("Try Again?", 27, 90, RGBToWord(0,255,0),0);
 		printText("Press Down", 27, 100, RGBToWord(0,0,255),0);
-		
 
 		
 
@@ -398,12 +415,12 @@ void endgame(int x)
 }
 void LedOn(int Led)
 {
-	GPIOA->ODR = GPIOA->ODR | (Led<<0);
+	GPIOA->ODR = GPIOA->ODR | (1<<Led);
 }
 
 void LedOff(int Led)
 {
-	GPIOA->ODR = GPIOA->ODR & ~(Led<<0);
+	GPIOA->ODR = GPIOA->ODR & ~(1<<Led);
 }
 
 
