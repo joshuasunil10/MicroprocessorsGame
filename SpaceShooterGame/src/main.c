@@ -565,7 +565,7 @@ void LightShow()
 }
 void playTheme()
 {
-	char notes[7][2] = {"C5", "D5", "E5", "F5", "G5", "A5", "B5"};
+	char notes[7][3] = {"C5", "D5", "E5", "F5", "G5", "A5", "B5"};
     int delays[] = {500, 500, 500, 500, 500, 500, 500};  // in milliseconds
 
     // Play the theme
