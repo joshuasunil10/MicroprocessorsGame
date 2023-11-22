@@ -33,7 +33,9 @@ void log(char log[]);
 void game();
 void LightShow();
 void playTheme();
-
+void gameSetup();
+void LedOff();
+void LedOn();
 // PREREQUISITE
 volatile uint32_t milliseconds;
 
@@ -76,7 +78,7 @@ int main()
 	gameSetup();
 	
 	//main game function
-	game();
+	startgame();
 }
 
 void gameSetup()
@@ -112,15 +114,16 @@ void game()
 			}
 		}
 
-		int projactive = 0; //Projectile toggle
-		int objactive = 0; //meteor toggle, might make it able to create multiple using arrays just one for now
-
+		uint16_t projactive = 0; //Projectile toggle
+		int meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
+		uint16_t meteorNum = 1;//Records the current amount of varables
+		
 		//for ship
-		int toggle = 0;
-		int hmoved = 0;
+		uint16_t toggle = 0;
+		uint16_t hmoved = 0;
 
 		// player health
-		int shields = 2;
+		uint16_t shields = 2;
 
 		//For ship
 		uint16_t x = 53;
@@ -134,17 +137,15 @@ void game()
 		uint16_t oldprojy = projy;// only moves up so no need for x update
 
 		//For meteor
-		uint16_t objx = 0;
-		uint16_t objy = 0;
-		uint16_t oldobjy = objy;// only moves down so no need for x update
+		int metx[4]={0,0,0,0};
+		int mety[4]={0,0,0,0};
+		uint16_t oldmety = 0;// only moves down so no need for x update
 
 		//score variable
 		uint16_t score = 0;
 
 		//printNumber(score, 10,20,RGBToWord(255,255,255),0);
 
-		// calls the start game 
-		startgame();
 		
 		char GameStartLog[] = {"Game has started"};
 		char MissileLog[] = {"Missile Hit"};
@@ -186,110 +187,128 @@ void game()
 				{	
 					break;
 				}
+			}
 				
+			switch (score)
+			{
+				case 5:
+					meteorNum=2;
+					break;
+				
+				case 15:
+					meteorNum=3;
+					break;
+
+				case 25:
+					meteorNum=4;
+					break;
+
+				default:
+					break;
+			}
 					
+			hmoved = 0;
+			if ((GPIOB->IDR & (1 << 4))==0) // right pressed
+			{					
+				if (x < 102)
+				{
+					x = x + 4;
+					playNote(A4);
+					delay(10);
+					playNote(0);
+					delay(1);
+					hmoved = 1;
+				}						
 			}
 
-				hmoved = 0;
-				if ((GPIOB->IDR & (1 << 4))==0) // right pressed
-				{					
-					if (x < 102)
-					{
-						x = x + 4;
-						playNote(A4);
-						delay(10);
-						playNote(0);
-						delay(1);
-						hmoved = 1;
-					}						
-				}
-				if ((GPIOB->IDR & (1 << 5))==0) // left pressed
-				{			
-					
-					if (x > 3)
-					{
-						x = x - 4;
-						playNote(A4);
-						delay(10);
-						playNote(0);
-						delay(1);
-						hmoved = 1;
-					}			
-				}
-				if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive == 0) // up pressed and no projectile active
+			if ((GPIOB->IDR & (1 << 5))==0) // left pressed
+			{					
+				if (x > 3)
 				{
-					playNote(A8);
-					delay(20);
+					x = x - 4;
+					playNote(A4);
+					delay(10);
 					playNote(0);
-					projactive = 1;//activates projectile
-					projx = x + 10;
-					projy = y - 5;
-				}
-				if ((hmoved))
+					delay(1);
+					hmoved = 1;
+				}			
+			}
+
+			if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive == 0) // up pressed and no projectile active
+			{
+				playNote(A8);
+				delay(20);
+				playNote(0);
+				projactive = 1;//activates projectile
+				projx = x + 10;
+				projy = y - 5;
+			}
+
+			if ((hmoved))
+			{
+				// only redraw if there has been some movement (reduces flicker)
+				fillRectangle(oldx,oldy,21,21,0);
+				oldx = x;
+				oldy = y;					
+				if (hmoved)
 				{
-					// only redraw if there has been some movement (reduces flicker)
-					fillRectangle(oldx,oldy,21,21,0);
-					oldx = x;
-					oldy = y;					
-					if (hmoved)
+					if (toggle)
+						putImage(x,y,21,21,virt,0,0);
+					else
 					{
-						if (toggle)
-							putImage(x,y,21,21,virt,0,0);
-						else
-							putImage(x,y,21,21,virtani,0,0);
-						
+						putImage(x,y,21,21,virtani,0,0);		
 						toggle = toggle ^ 1;
 					}
+				}
 
 					// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
 					
-				}
-				if(projactive==1)
+			}
+
+			if(projactive==1)
+			{
+				//projectile movement 
+				oldprojy = projy;
+				projy = projy-2;
+				fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
+				fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
+				if (projy==0)
 				{
-					//projectile movement 
-					oldprojy = projy;
-					projy = projy-2;
-					fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
-					fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
-					if (projy==0)
-					{
 					//checks to see if the projectile has reached the top of the screen
 					fillRectangle(projx,projy,1,5,RGBToWord(0,0,0));
 					projactive=0;//allows new projectile to be made
-					}
-				}	
-				if(objactive==0)
-				{
-					objactive=1;
-					objx=x+6;
-					objy=5;
-					objactive = 1;
+				}
+			}
+
+			for(int i=0; i<meteorNum; i++){
+				if(meteorActive[i]==0){
+					meteorActive[i]=1;
 					printNumber(score, 90,10,RGBToWord(255,255,255),0);
-					objx = rand() % 80+10;  // Generate a random x-coordinate for the meteor
-					objy = 5;
+					metx[i] = rand() % 80+10;  // Generate a random x-coordinate for the meteor
+					mety[i] = 5;
 				}
-				if(objactive==1)
-				{
-					oldobjy=objy;
-					objy+17;
-					objy++;
-					fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
-					fillRectangle(objx,objy,5,5,RGBToWord(255,128,0));
-					if(objy>140)
+				else if(meteorActive[i]==1){
+					oldmety=mety[i];
+					mety[i]++;
+					fillRectangle(metx[i],oldmety,7,7,RGBToWord(0,0,0));
+					fillRectangle(metx[i],mety[i],7,7,RGBToWord(255,128,0));
+				
+					if(mety[i]>140)
 					{
-					fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
-					objactive=0;
+						fillRectangle(metx[i],mety[i],7,7,RGBToWord(0,0,0));
+						meteorActive[i]=0;
 					}
 				}
-				//detects if the meteor has hit the ship
-				if (isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) )
+			}
+
+			//detects if the meteor has hit the ship
+			for(int i=0; i<meteorNum; i++){
+				if (isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) )
 					{	
 						log(ShipHitLog);
 						//if you have lives left you lose them rather then losing the game
 						if(shields>0)
-						{   
-							
-							
+						{   							
 							shields--;
 							playNote(A6);
 							delay(20);
@@ -305,11 +324,11 @@ void game()
 							fillRectangle(0,0,127,159,RGBToWord(0,0,0));
 							delay(70);
 							putImage(x,y,21,21,virt,0,0);
-							objactive=0;
-							
+							meteorActive[i]=0;		
 						}
 						else
-						{	playNote(A6);
+						{	
+							playNote(A6);
 							delay(20);
 							playNote(0);
 							putImage(x,y,21,21,dmg,0,0); 
@@ -319,30 +338,30 @@ void game()
 							log(GameEndLog);
 							break;	
 						}
-						
-					}	
-
-				//detects if the meteor has been hit by a missile
-				if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
-					{
-						fillRectangle(objx,objy,30,30,RGBToWord(0,0,0));
-						fillRectangle(projx,projy,5,10,RGBToWord(0,0,0)); // artefacting issue fix
-						playNote(A6);
-						delay(20);
-						playNote(0);
-						putImage(x,y,21,21,virt,0,0);
-						log(MissileLog);
-						objactive=0;
-						projactive=0;
-						projx=0;
-						projy=0;
-						score = score + 1;
+										
 					}
-				delay(15);
-			}
-			
-		}
-		
+				}
+
+			for(int i=0; i<meteorNum; i++)
+			{
+				if (isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) )
+				{
+					fillRectangle(metx[i],mety[i],30,30,RGBToWord(0,0,0)); // artefacting issue fix
+					playNote(A6);
+					delay(20);
+					playNote(0);
+					putImage(x,y,21,21,virt,0,0);
+					log(MissileLog);
+					meteorActive[i]=0;
+					projactive=0;
+					projx=0;
+					projy=0;
+					score+=1;
+					}
+			}	
+		delay(15);
+		}		
+	}		
 }
 void initSysTick(void)
 {
@@ -461,7 +480,7 @@ void startgame()
 		// when up is pressed, start the game
 		if  ((GPIOA->IDR & (1 << 11)) == 0)
 		{	
-			break;
+			game();
 		}
 		}
 		
@@ -496,12 +515,11 @@ void endgame(int x)
 			while  ((GPIOA->IDR & (1 << 11)) !=0 )
 			{
 		
-			delay(40);
-					
+			delay(40);	
 			
 			}
 		delay(100);
-		break;
+		startgame();
 	    }
 }
 
@@ -545,7 +563,6 @@ void LightShow()
 		LedOff(9);
 		delay(100);
 }
-
 void playTheme()
 {
 	char notes[] = {'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5'};
