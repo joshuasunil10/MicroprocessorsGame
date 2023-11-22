@@ -6,8 +6,6 @@ Developed by Harry Shackleton & Joshua Sunil Mathew
 Microporcessors Module Coursework - TU857/2
 
 "A SIMPLE SPACE SHOOTER GAME WHERE A SPACESHIP AVOIDS/SHOOTS METEORS HEADED FOR IT"
-
-
 */
 
 // INCLUDES
@@ -32,9 +30,11 @@ void endgame(int x);
 void printscore(int x);
 void startgame();
 void log(char log[]);
-void theme();
 void game();
+void LightShow();
+void playTheme();
 
+// PREREQUISITE
 volatile uint32_t milliseconds;
 
 // ASSET GENERATION
@@ -59,11 +59,20 @@ const uint16_t dg1[]=
 {
 	0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,
 };
+const uint16_t dmg[]=
+{
+	0,0,0,0,0,0,0,0,0,40224,40224,40224,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40224,40224,40224,40224,40224,0,0,0,0,0,0,0,0,0,61307,61307,61307,0,0,0,40224,40224,120,120,25037,40224,40224,0,0,0,61307,61307,61307,0,0,61307,1994,61307,0,0,0,40224,50497,160,160,58101,42040,40224,0,61307,1994,1994,0,61307,0,0,61307,1994,61307,0,0,0,40224,17993,168,168,58093,33856,40224,0,61307,0,0,0,0,0,0,0,0,0,0,0,0,40224,9801,152,152,17066,34377,40224,0,0,0,0,0,0,0,0,0,0,0,0,0,51986,40224,59209,128,128,17049,9793,40224,53018,0,0,0,0,0,0,0,0,0,0,0,46612,31005,40224,42569,176,176,41914,50769,40224,39197,46612,0,0,0,0,0,0,0,0,0,40224,40224,40224,13474,9801,176,176,33466,34121,13474,40224,40224,40224,0,0,0,0,0,0,0,40224,40224,13474,13474,13474,1609,128,128,24961,9545,62364,13474,13474,40224,40224,0,0,0,0,0,40224,13474,40224,62364,62364,29605,34361,61051,61051,46245,1593,62364,62364,62364,40224,13474,40224,0,0,0,40224,13474,62364,40224,3584,3584,3584,25897,793,793,49944,34089,3584,3584,3584,40224,62364,13474,40224,0,40224,13474,62364,62364,40224,3584,3584,3584,34064,9785,9785,51001,33800,61184,3584,3584,40224,62364,62364,13474,40224,2816,2816,2816,2816,2816,62364,62364,62364,1577,19290,19290,36203,50465,62364,62364,62364,2816,2816,2816,2816,2816,0,0,0,0,0,62364,62364,62364,26161,36996,36996,28804,50473,62364,62364,62364,0,0,0,0,0,0,0,0,0,0,50960,40224,40224,33544,10050,10050,59193,58112,40224,40224,26401,0,0,0,0,0,0,0,61307,0,0,27755,28011,2114,29869,0,0,0,20355,11090,2642,44667,0,0,61307,0,0,0,40224,61307,0,0,15982,53273,21010,24327,0,0,0,24327,53273,4113,24327,0,0,4368,0,0,0,40224,61307,0,0,32327,15873,57092,24327,0,0,0,40527,24066,16131,24327,0,61307,4368,0,0,0,40224,0,0,0,24327,32518,7703,24327,0,0,0,24327,24334,24367,24327,0,0,4368,4368,0,0,0,0,0,0,0,48503,24327,0,0,0,0,0,24327,24327,0,0,0,0,0,0,
+};
+const uint16_t dmg1[]=
+{
+	0,0,0,0,0,0,0,0,0,27482,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,27482,27482,3163,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,120,120,25037,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,50497,160,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58093,33856,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9801,152,152,17066,34377,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,51986,26682,59209,128,128,17049,9793,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42569,176,176,41914,50769,0,0,46612,0,0,0,0,0,0,0,0,0,27482,19290,27482,0,0,0,176,33466,34121,0,27482,27482,27482,0,0,0,0,0,0,0,0,27482,62364,62364,62364,1609,0,0,24961,0,0,62364,62364,27482,27482,0,0,0,0,0,3171,0,27482,62364,62364,29605,34361,61051,0,0,0,62364,62364,62364,27482,62364,0,0,0,0,27482,62364,0,27482,3584,3584,3584,25897,793,793,0,0,3584,3584,3584,27482,62364,0,27482,0,27482,62364,62364,0,27482,3584,3584,0,0,0,0,0,33800,0,3584,3584,27482,62364,62364,0,27482,2816,2816,2816,0,0,0,0,0,1577,19290,19290,36203,50465,0,0,0,2816,2816,2816,0,2816,0,0,0,0,0,62364,62364,62364,26161,36996,36996,28804,50473,62364,62364,0,0,0,0,0,0,0,0,0,0,0,50960,12544,61440,33544,10050,10050,59193,58112,45312,12288,26401,0,0,0,0,0,0,0,0,0,0,27755,28011,2114,29869,0,0,0,20355,11090,2642,44667,0,0,0,0,0,0,0,0,0,0,0,53273,21010,0,0,0,0,0,53273,4113,0,0,0,0,0,0,0,0,0,0,0,0,15873,57092,0,0,0,0,0,24066,16131,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+
 
 // MAIN FUNCTION
 int main()
 {	
-
+	// setup game 
 	gameSetup();
 	
 	//main game function
@@ -85,179 +94,255 @@ void game()
 
 	while(1)
 	{
-	
-	int projactive = 0;//Projectile toggle
-	int objactive = 0;//meteor toggle, might make it able to create multiple using arrays just one for now
+		int notes[] = {C5,E4,G4,A5,F4,D4,B3};
 
-	//for ship
-	int toggle = 0;
-	int hmoved = 0;
+		int i = 0;
 
-	//For ship
-	uint16_t x = 53;
-	uint16_t y = 115;
-	uint16_t oldx = x;
-	uint16_t oldy = y;
+		for (i = 0 ; i < 7; i++)
+		{	
+			if(i == 6)
+			{
+				i == 0;
+			}
+			else
+			{
+			playNote(notes[i]);
+			delay(100);
+			playNote(0);
+			}
+		}
 
-	//For projectile
-	uint16_t projx = 0;
-	uint16_t projy = 0;
-	uint16_t oldprojy = projy;// only moves up so no need for x update
+		int projactive = 0; //Projectile toggle
+		int objactive = 0; //meteor toggle, might make it able to create multiple using arrays just one for now
 
-	//For meteor
-	uint16_t objx = 0;
-	uint16_t objy = 0;
-	uint16_t oldobjy = objy;// only moves down so no need for x update
+		//for ship
+		int toggle = 0;
+		int hmoved = 0;
 
-	//score variable
-	uint16_t score = 0;
+		// player health
+		int shields = 2;
 
-	
-	// calls the start game 
-	startgame();
-	
-	char GameStartLog[] = {"Game has started"};
+		//For ship
+		uint16_t x = 53;
+		uint16_t y = 115;
+		uint16_t oldx = x;
+		uint16_t oldy = y;
 
-	fillRectangle(0,0,127,159,RGBToWord(0,0,0));
-	putImage(x,y,21,21,virt,0,0); // Game starting point
+		//For projectile
+		uint16_t projx = 0;
+		uint16_t projy = 0;
+		uint16_t oldprojy = projy;// only moves up so no need for x update
 
-	//srand(time(NULL));
+		//For meteor
+		uint16_t objx = 0;
+		uint16_t objy = 0;
+		uint16_t oldobjy = objy;// only moves down so no need for x update
 
-	log(GameStartLog);
+		//score variable
+		uint16_t score = 0;
+
+		//printNumber(score, 10,20,RGBToWord(255,255,255),0);
+
+		// calls the start game 
+		startgame();
 		
-		int shields = 3;
+		char GameStartLog[] = {"Game has started"};
+		char MissileLog[] = {"Missile Hit"};
+		char ShipHitLog[] = {"Ship Hit!"};
+		char LifeLost[] = {"Life Lost"};
+		char GameEndLog[] = {"Game has ended"};
+
+		fillRectangle(0,0,127,159,RGBToWord(0,0,0));
+		putImage(x,y,21,21,virt,0,0); // Game starting point
+
+		// GAME START LOG
+		log(GameStartLog);
+			
+		
 		while(1)
 		{
 			switch (shields)
 			{
-			case (0):
-				LedOff(12);
-				break;
-			case(1):
-				LedOff(10);
-				break;
-			case(2):
-				LedOff(9);
-				break;
-			case(3):
-				LedOn(9);
-				LedOn(10);
-				LedOn(12);
-				break;
-			default:
-				break;
+				case (0):
+				{
+					LedOff(10);
+					break;
+				}
+				case(1):
+				{
+					
+					LedOff(9);
+					break;
+				}
+				case(2):
+				{
+					
+					LedOn(9);
+					LedOn(10);
+					LedOn(12);
+					break;
+				}
+				default:
+				{	
+					break;
+				}
+				
+					
 			}
 
-			hmoved = 0;
-			if ((GPIOB->IDR & (1 << 4))==0) // right pressed
-			{					
-				if (x < 102)
-				{
-					x = x + 2;
-					hmoved = 1;
-				}						
-			}
-			if ((GPIOB->IDR & (1 << 5))==0) // left pressed
-			{			
-				
-				if (x > 3)
-				{
-					x = x - 2;
-					hmoved = 1;
-				}			
-			}
-			if ( (GPIOA->IDR & (1 << 8)) == 0 && projactive == 0) // up pressed and no projectile active
-			{
-				projactive = 1;//activates projectile
-				projx = x + 10;
-				projy = y - 5;
-			}
-			if ((hmoved))
-			{
-				// only redraw if there has been some movement (reduces flicker)
-				fillRectangle(oldx,oldy,21,21,0);
-				oldx = x;
-				oldy = y;					
-				if (hmoved)
-				{
-					if (toggle)
-						putImage(x,y,21,21,virt,0,0);
-					else
-						putImage(x,y,21,21,virtani,0,0);
-					
-					toggle = toggle ^ 1;
+				hmoved = 0;
+				if ((GPIOB->IDR & (1 << 4))==0) // right pressed
+				{					
+					if (x < 102)
+					{
+						x = x + 4;
+						playNote(A4);
+						delay(10);
+						playNote(0);
+						delay(1);
+						hmoved = 1;
+					}						
 				}
+				if ((GPIOB->IDR & (1 << 5))==0) // left pressed
+				{			
+					
+					if (x > 3)
+					{
+						x = x - 4;
+						playNote(A4);
+						delay(10);
+						playNote(0);
+						delay(1);
+						hmoved = 1;
+					}			
+				}
+				if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive == 0) // up pressed and no projectile active
+				{
+					playNote(A8);
+					delay(20);
+					playNote(0);
+					projactive = 1;//activates projectile
+					projx = x + 10;
+					projy = y - 5;
+				}
+				if ((hmoved))
+				{
+					// only redraw if there has been some movement (reduces flicker)
+					fillRectangle(oldx,oldy,21,21,0);
+					oldx = x;
+					oldy = y;					
+					if (hmoved)
+					{
+						if (toggle)
+							putImage(x,y,21,21,virt,0,0);
+						else
+							putImage(x,y,21,21,virtani,0,0);
+						
+						toggle = toggle ^ 1;
+					}
 
-				// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
-				
-			}
-			if(projactive==1)
-			{
-				//projectile movement 
-				oldprojy = projy;
-				projy = projy-2;
-				fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
-				fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
-				if (projy==0)
-				{
-				//checks to see if the projectile has reached the top of the screen
-				fillRectangle(projx,projy,1,5,RGBToWord(0,0,0));
-				projactive=0;//allows new projectile to be made
-				}
-			}	
-			if(objactive==0)
-			{
-				objactive=1;
-				objx=x+6;
-				objy=5;
-				objactive = 1;
-				objx = rand() % 80+10;  // Generate a random x-coordinate for the meteor
-				objy = 5;
-			}
-			if(objactive==1)
-			{
-				oldobjy=objy;
-				objy++;
-				fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
-				fillRectangle(objx,objy,5,5,RGBToWord(255,128,0));
-				if(objy>140)
-				{
-				fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
-				objactive=0;
-				}
-			}
-			//detects if the meteor has hit the ship
-			if (isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) )
-				{
-					//if you have lives left you lose them rather then losing the game
-					if(shields>0)
-					{
-						shields--;
-						objactive=0;
-					}
-					else
-					{
-						endgame(score);	
-						break;	
-					}
+					// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
 					
+				}
+				if(projactive==1)
+				{
+					//projectile movement 
+					oldprojy = projy;
+					projy = projy-2;
+					fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
+					fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
+					if (projy==0)
+					{
+					//checks to see if the projectile has reached the top of the screen
+					fillRectangle(projx,projy,1,5,RGBToWord(0,0,0));
+					projactive=0;//allows new projectile to be made
+					}
 				}	
-
-			//detects if the meteor has been hit by a missile
-			if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
+				if(objactive==0)
 				{
-					fillRectangle(objx,objy,30,30,RGBToWord(0,0,0));
-					objactive=0;
-					projactive=0;
-					projx=0;
-					projy=0;
-					score = score + 1;
+					objactive=1;
+					objx=x+6;
+					objy=5;
+					objactive = 1;
+					printNumber(score, 90,10,RGBToWord(255,255,255),0);
+					objx = rand() % 80+10;  // Generate a random x-coordinate for the meteor
+					objy = 5;
 				}
-			delay(15);
+				if(objactive==1)
+				{
+					oldobjy=objy;
+					objy+17;
+					objy++;
+					fillRectangle(objx,oldobjy,5,5,RGBToWord(0,0,0));
+					fillRectangle(objx,objy,5,5,RGBToWord(255,128,0));
+					if(objy>140)
+					{
+					fillRectangle(objx,objy,5,5,RGBToWord(0,0,0));
+					objactive=0;
+					}
+				}
+				//detects if the meteor has hit the ship
+				if (isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) || isInside(x,y,21,21,objx,objy) )
+					{	
+						log(ShipHitLog);
+						//if you have lives left you lose them rather then losing the game
+						if(shields>0)
+						{   
+							
+							
+							shields--;
+							playNote(A6);
+							delay(20);
+							playNote(0);
+							putImage(x,y,21,21,dmg,0,0); 
+							delay(100);
+							putImage(x,y,21,21,dmg1,0,0);
+							delay(100);
+							printTextX2("SHIP HIT!", 10,50,RGBToWord(255,0,0),0);
+							delay(50);
+							printTextX2("SHIP HIT!", 11,50,RGBToWord(255,0,255),0);
+							delay(200);
+							fillRectangle(0,0,127,159,RGBToWord(0,0,0));
+							delay(70);
+							putImage(x,y,21,21,virt,0,0);
+							objactive=0;
+							
+						}
+						else
+						{	playNote(A6);
+							delay(20);
+							playNote(0);
+							putImage(x,y,21,21,dmg,0,0); 
+							delay(100);
+							putImage(x,y,21,21,dmg1,0,0);
+							endgame(score);	
+							log(GameEndLog);
+							break;	
+						}
+						
+					}	
+
+				//detects if the meteor has been hit by a missile
+				if (isInside(objx,objy,5,5,projx,projy) || isInside(objx,objy,5,5,projx+5,projy) || isInside(objx,objy,5,5,projx,projy+5) || isInside(objx,objy,5,5,projx+5,projy+5) )
+					{
+						fillRectangle(objx,objy,30,30,RGBToWord(0,0,0));
+						fillRectangle(projx,projy,5,10,RGBToWord(0,0,0)); // artefacting issue fix
+						playNote(A6);
+						delay(20);
+						playNote(0);
+						putImage(x,y,21,21,virt,0,0);
+						log(MissileLog);
+						objactive=0;
+						projactive=0;
+						projx=0;
+						projy=0;
+						score = score + 1;
+					}
+				delay(15);
+			}
+			
 		}
 		
-	}
-	
 }
 void initSysTick(void)
 {
@@ -359,17 +444,22 @@ void startgame()
     
 	while(1)
 		{
+		
+		LightShow();
+		
+	
         // DISPLAY TITLE	
         printTextX2("Space", 21, 20, RGBToWord(255, 0, 0), 0);
 		printTextX2("Shooter!", 21, 35, RGBToWord(255, 0, 255), 0);
+
 		// PLAYER TITLE
-		printText("Press Up", 27, 90, RGBToWord(0, 255, 0), 0);
+		printText("Press Down", 27, 90, RGBToWord(0, 255, 0), 0);
 		printText("to Begin!", 27, 100, RGBToWord(0, 0, 255), 0);
 		// AUTHOR
 		printText("by Harry & Josh", 17, 119, RGBToWord(0,255,0),0);
 
 		// when up is pressed, start the game
-		if  ((GPIOA->IDR & (1 << 8)) == 0)
+		if  ((GPIOA->IDR & (1 << 11)) == 0)
 		{	
 			break;
 		}
@@ -381,12 +471,13 @@ void endgame(int x)
 {
     fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
     
-   
+	
 	
 
 		while(1)
 		{
         
+		LightShow();
 		// Print "Game Over!" message
         printTextX2("Game Over!", 7, 25, RGBToWord(255, 0, 0), 0);
 		
@@ -413,14 +504,16 @@ void endgame(int x)
 		break;
 	    }
 }
+
 void LedOn(int Led)
 {
 	GPIOA->ODR = GPIOA->ODR | (1<<Led);
 }
 
 void LedOff(int Led)
-{
+{	
 	GPIOA->ODR = GPIOA->ODR & ~(1<<Led);
+	
 }
 
 
@@ -436,4 +529,31 @@ void log(char log[])
         i++;
     }
     eputs("\r\n");
+}
+void LightShow()
+{	
+	//OPENING THEME LIGHSHOW
+
+		LedOn(12);
+		delay(100);
+		LedOff(12);
+		LedOn(10);
+		delay(100);
+		LedOff(10);
+		LedOn(9);
+		delay(100);
+		LedOff(9);
+		delay(100);
+}
+
+void playTheme()
+{
+	char notes[] = {'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5'};
+    int delays[] = {500, 500, 500, 500, 500, 500, 500};  // in milliseconds
+
+    // Play the theme
+    for (size_t i = 0; i < sizeof(notes) / sizeof(notes[0]); i++) {
+        playNote(notes[i]);
+		delay(delays[i]);
+    }
 }
