@@ -104,7 +104,7 @@ void game()
 		{	
 			if(i == 6)
 			{
-				i == 0;
+				i=0;
 			}
 			else
 			{
@@ -115,7 +115,7 @@ void game()
 		}
 
 		uint16_t projactive = 0; //Projectile toggle
-		int meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
+		char meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
 		uint16_t meteorNum = 1;//Records the current amount of varables
 		
 		//for ship
@@ -281,13 +281,13 @@ void game()
 			}
 
 			for(int i=0; i<meteorNum; i++){
-				if(meteorActive[i]==0){
+				if(meteorActive[i]){
 					meteorActive[i]=1;
 					printNumber(score, 90,10,RGBToWord(255,255,255),0);
 					metx[i] = rand() % 80+10;  // Generate a random x-coordinate for the meteor
 					mety[i] = 5;
 				}
-				else if(meteorActive[i]==1){
+				else{
 					oldmety=mety[i];
 					mety[i]++;
 					fillRectangle(metx[i],oldmety,7,7,RGBToWord(0,0,0));
@@ -565,7 +565,7 @@ void LightShow()
 }
 void playTheme()
 {
-	char notes[] = {'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5'};
+	char notes[7][2] = {"C5", "D5", "E5", "F5", "G5", "A5", "B5"};
     int delays[] = {500, 500, 500, 500, 500, 500, 500};  // in milliseconds
 
     // Play the theme
