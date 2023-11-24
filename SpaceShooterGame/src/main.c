@@ -72,6 +72,7 @@ const uint16_t dmg1[]=
 };
 
 int Highscores[5]={42,31,26,19,14};
+int *ptr = HighScore;
 
 // MAIN FUNCTION
 int main()
