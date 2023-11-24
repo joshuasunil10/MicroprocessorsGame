@@ -7,6 +7,14 @@ Microporcessors Module Coursework - TU857/2
 
 "A SIMPLE SPACE SHOOTER GAME WHERE A SPACESHIP AVOIDS/SHOOTS METEORS HEADED FOR IT"
 
+FEATURES
+> Implements Serial Logging
+> Animations for Ship Hit and Missile Break
+> I/O Features such as Sound(Buzzer) & LEDS (Tracking Lives Remaining)
+> Random Meteor Generation 
+> Sound For Game Moments such as shooting, movement, projectile hit, ship hit 
+
+
 */
 
 // INCLUDES
@@ -33,6 +41,7 @@ void logger(char log[]);
 void game();
 void LightShow();
 void playTheme();
+void playOutro();
 void gameSetup();
 void LedOn();
 
@@ -106,7 +115,6 @@ void game()
 	while(1)
 	{
 		
-
 		uint16_t projactive = 0; //Projectile toggle
 		int meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
 		uint16_t meteorNum = 1;//Records the current amount of varables
@@ -139,22 +147,26 @@ void game()
 		uint16_t score = 0;
 
 
-		
+		// Serial Logging Strings
 		char GameStartlogger[] = {"Game has started"};
 		char Missilelogger[] = {"Missile Hit"};
 		char ShipHitlogger[] = {"Ship Hit!"};
 		char LifeLost[] = {"Life Lost"};
 		char GameEndlogger[] = {"Game has ended"};
 
+		// Clear Screen
 		fillRectangle(0,0,127,159,RGBToWord(0,0,0));
-		putImage(x,y,21,21,virt,0,0); // Game starting point
 
-		// GAME START logger
+		// Place Inital Space Ship for Game Start
+		putImage(x,y,21,21,virt,0,0); 
+
+		// Start Game Serial Log
 		logger(GameStartlogger);
 			
 		
 		while(1)
-		{
+		{	
+			// Game Lifes Tracker - using LEDS on the breadboard
 			switch (shields)
 			{
 				case (0):
@@ -181,31 +193,35 @@ void game()
 					break;
 				}
 			}
-				
+			
+			// Game Difficulty Modifiers, - adds more meteors at certain score points
 			switch (score)
-			{
+			{	
+				// Difficulty 1
 				case 5:
 					meteorNum=2;
 					break;
-				
+				// Difficulty 2
 				case 15:
 					meteorNum=3;
 					break;
-
+				// Difficulty 3
 				case 25:
 					meteorNum=4;
 					break;
-
+				// Difficulty 4	
 				case 35:
 					meteorNum=5;
 					break;
 
 				default:
 					break;
-			}
+			} // end case
 					
 			hmoved = 0;
-			if ((GPIOB->IDR & (1 << 4))==0) // right pressed
+			
+			// When Right Button is Pressed
+			if ((GPIOB->IDR & (1 << 4))==0) 
 			{					
 				if (x < 102)
 				{
@@ -218,7 +234,8 @@ void game()
 				}						
 			}
 
-			if ((GPIOB->IDR & (1 << 5))==0) // left pressed
+			// When Left Button is Pressed
+			if ((GPIOB->IDR & (1 << 5))==0)
 			{					
 				if (x > 3)
 				{
@@ -231,7 +248,8 @@ void game()
 				}			
 			}
 
-			if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive == 0) // up pressed and no projectile active
+			// When Down is Pressed, and a projectile is fired 
+			if ( (GPIOA->IDR & (1 << 11)) == 0 && projactive == 0) 
 			{
 				playNote(A8);
 				delay(20);
@@ -256,10 +274,7 @@ void game()
 						putImage(x,y,21,21,virtani,0,0);		
 						toggle = toggle ^ 1;
 					}
-				}
-
-					// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
-					
+				}		
 			}
 
 			if(projactive==1)
@@ -267,8 +282,13 @@ void game()
 				//projectile movement 
 				oldprojy = projy;
 				projy = projy-2;
+
+				//Clear 
 				fillRectangle(projx, oldprojy, 1,5,RGBToWord(0,0,0));
+
+				// Projectile Shoot
 				fillRectangle(projx, projy, 1,5,RGBToWord(255,255,255));
+
 				if (projy==0)
 				{
 					//checks to see if the projectile has reached the top of the screen
@@ -277,96 +297,151 @@ void game()
 				}
 			}
 
-			for(int i=0; i<meteorNum; i++){
-				if(meteorActive[i]==0){
+			// Meteor 
+			for(int i=0; i<meteorNum; i++)
+			{
+				if(meteorActive[i]==0)
+				{
 					meteorActive[i]=1;
+					// Live Score System while game is played
 					sprintf(scorearray,"%u",score);
 					printTextX2(scorearray, 105, 10, RGBToWord(0, 255, 0), 0);
+
+					// Random Meteor spawn location
 					metx[i] = rand() % 80+10;  // Generate a random x-coordinate for the meteor
 					mety[i] = 5;
 				}
-				else if(meteorActive[i]==1){
+
+				else if(meteorActive[i]==1)
+				{	
+
 					oldmety=mety[i];
 					mety[i]++;
+					// using a sprite for the meteor
 					putImage(metx[i],oldmety,9,12,met1,0,0);
 					putImage(metx[i],mety[i],9,12,met1,0,0);
 				
 					if(mety[i]>140)
-					{
+					{	
+						// clear the sprite, when reached the bottom of the screen
 						fillRectangle(metx[i],mety[i],9,12,RGBToWord(0,0,0));
 						meteorActive[i]=0;
 					}
 				}
 			}
 
-			//detects if the meteor has hit the ship
-			for(int i=0; i<meteorNum; i++){
-				if (isInside(x-6,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) )
-					{	
-						logger(ShipHitlogger);
-						logger(LifeLost);
-						//if you have lives left you lose them rather then losing the game
-						if(shields>0)
-						{   							
-							shields--;
-							playNote(A6);
-							delay(20);
-							playNote(0);
-							putImage(x,y,21,21,dmg,0,0); 
-							delay(100);
-							putImage(x,y,21,21,dmg1,0,0);
-							delay(100);
-							printTextX2("SHIP HIT!", 10,50,RGBToWord(255,0,0),0);
-							delay(50);
-							printTextX2("SHIP HIT!", 11,50,RGBToWord(255,0,255),0);
-							delay(200);
-							fillRectangle(0,0,127,159,RGBToWord(0,0,0));
-							delay(70);
-							putImage(x,y,21,21,virt,0,0);
-							meteorActive[i]=0;		
-						}
-						else
-						{	
-							playNote(A6);
-							delay(20);
-							playNote(0);
-							putImage(x,y,21,21,dmg,0,0); 
-							delay(100);
-							putImage(x,y,21,21,dmg1,0,0);
-							logger(GameEndlogger);
-							endgame(score);	
-							break;	
-						}
-										
-					}
-				}
-
+			//Detects if the meteor has hit the ship
 			for(int i=0; i<meteorNum; i++)
 			{
+				if (isInside(x-6,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) )
+				{	
+					logger(ShipHitlogger);
+					logger(LifeLost);
+					
+					//if you have lives left you lose them rather then losing the game
+					if(shields>0)
+					{   
+						// Decrement Shield//Life & play sound			
+						shields--;
+						playNote(A6);
+						delay(20);
+						playNote(0);
+
+						// switch the sprite for a damaged ship animation
+						putImage(x,y,21,21,dmg,0,0); 
+						delay(100);
+						putImage(x,y,21,21,dmg1,0,0);
+						delay(100);
+						
+						// Ship Hit! Text Appears on the screen
+						printTextX2("SHIP HIT!", 10,50,RGBToWord(255,0,0),0);
+						delay(50);
+						printTextX2("SHIP HIT!", 11,50,RGBToWord(255,0,255),0);
+						delay(200);
+						fillRectangle(0,0,127,159,RGBToWord(0,0,0));
+						delay(70);
+
+						// place ship back for next iteration of game
+						putImage(x,y,21,21,virt,0,0);
+
+						meteorActive[i]=0;		
+					}
+					
+					else
+					{	
+						// Final Life
+
+						playNote(A6);
+						delay(20);
+						playNote(0);
+
+						// Damage Animation
+						putImage(x,y,21,21,dmg,0,0); 
+						delay(100);
+						putImage(x,y,21,21,dmg1,0,0);
+
+						// Log to Serial Monitor
+						logger(GameEndlogger);
+
+						// EndGame function and pass in the score variable
+						endgame(score);	
+
+						break;
+
+					}
+										
+				}
+			}
+
+			// Detecting if Missile hits the meteor
+			for(int i=0; i<meteorNum; i++)
+			{	
+				// The hitbox for the meteor - adjust if neccessary
 				if (isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) )
 				{	
-
+					// meteor damage animation
 					putImage(metx[i],mety[i],9,12,met1,0,0);
 					delay(100);
 					putImage(metx[i],mety[i],9,12,met2,0,0);
 					delay(90);
-					fillRectangle(metx[i],mety[i],40,40,RGBToWord(0,0,0)); // artefacting issue fix
+
+					// #BUGFix - Issue of projectile staying on screen when hit
+					fillRectangle(metx[i],mety[i],40,40,RGBToWord(0,0,0)); 
+
+					// Play sound
 					playNote(A6);
 					delay(20);
 					playNote(0);
+
+					// Reset Ship to Start Positon 
 					putImage(x,y,21,21,virt,0,0);
+
+					// Log to Serial Monitor
 					logger(Missilelogger);
+
+					// Meteor is now off
 					meteorActive[i]=0;
+
+					// projectile is now off
 					projactive=0;
+
+					// reset positon
 					projx=0;
 					projy=0;
+
+					//increment score variable
 					score+=1;
-					}
-			}	
-		delay(15);
-		}		
+
+				}
+			}
+
+			delay(15);
+		} // end while		
 	}		
-}
+} // End Game Function
+
+// GAME SETUP FUNCTIONS ##################################################
+
 void initSysTick(void)
 {
 	SysTick->LOAD = 48000;
@@ -428,6 +503,34 @@ void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode)
 	mode_value = mode_value | Mode;
 	Port->MODER = mode_value;
 }
+
+// IO SETUP
+void setupIO()
+{
+	RCC->AHBENR |= (1 << 18) + (1 << 17); // enable Ports A and B
+	// print to screem 
+	display_begin();
+
+	// Button setup #1
+	pinMode(GPIOB,4,0); // Button
+	pinMode(GPIOB,5,0);	// Button
+	pinMode(GPIOA,8,0);	// Button
+	pinMode(GPIOA,11,0);// Button
+
+	// LED setup
+	pinMode(GPIOA,9,1); // Make GPIOA bit 0 an output LED
+	pinMode(GPIOA,10,1); // Make GPIOA bit 1 an output	LED
+	pinMode(GPIOA,12,1); // Make GPIOA bit 2 an output LED
+
+	// Button setup #2
+	enablePullUp(GPIOB,4);
+	enablePullUp(GPIOB,5);
+	enablePullUp(GPIOA,11);
+	enablePullUp(GPIOA,8);
+}
+
+
+// Checking to see if objects are in the hit box of another 
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py)
 {
 	// checks to see if point px,py is within the rectange defined by x,y,w,h
@@ -435,38 +538,23 @@ int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint
 	x2 = x1+w;
 	y2 = y1+h;
 	int rvalue = 0;
-	if ( (px >= x1) && (px <= x2))
+
+	if ( (px >= x1) && (px <= x2) )
 	{
 		// ok, x constraint met
-		if ( (py >= y1) && (py <= y2))
+		if ( (py >= y1) && (py <= y2) ) 
 			rvalue = 1;
 	}
 	return rvalue;
 }
-// IO SETUP
-void setupIO()
-{
-	RCC->AHBENR |= (1 << 18) + (1 << 17); // enable Ports A and B
-	display_begin();
-	pinMode(GPIOB,4,0);
-	pinMode(GPIOB,5,0);
-	pinMode(GPIOA,8,0);
-	pinMode(GPIOA,11,0);
-	pinMode(GPIOA,9,1); // Make GPIOA bit 0 an output
-	pinMode(GPIOA,10,1); // Make GPIOA bit 1 an output
-	pinMode(GPIOA,12,1); // Make GPIOA bit 2 an output
-	enablePullUp(GPIOB,4);
-	enablePullUp(GPIOB,5);
-	enablePullUp(GPIOA,11);
-	enablePullUp(GPIOA,8);
-}
+
 // function to start game
 void startgame()
 {
 	fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
 	
 	while(1)
-		{
+	{
 		
 		LightShow();
         // DISPLAY TITLE	
@@ -484,140 +572,164 @@ void startgame()
 		// when up is pressed, start the game
 		if  ((GPIOA->IDR & (1 << 11)) == 0)
 		{	
+			// play outro chime
 			playOutro();
+
+			// START GAME
 			game();
 		}
-
 
 	}
 		
 }
 
+// END GAME FUNCTION
 int endgame(int x)
-{
+{	
+	// clear screen
     fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
-    HighScore(x,Highscores);
-	
-	
+    
+	// HIGH SCORE ##### NEEDS TO BE FIXED
+	HighScore(x,Highscores);
 
 		while(1)
 		{
         
-		LightShow();
-		// Print "Game Over!" message
-        printTextX2("Game Over!", 7, 25, RGBToWord(255, 0, 0), 0);
+			// Lights Display
+			LightShow();
+
+			// Print "Game Over!" message
+        	printTextX2("Game Over!", 7, 25, RGBToWord(255, 0, 0), 0);
 		
-        // Convert the integer x to a string
-        char scoreText[20];  // Make sure the buffer is large enough to hold the text
-        sprintf(scoreText, "Score: %d", x);
+        	// Convert the integer x to a string
+        	char scoreText[20];  // Make sure the buffer is large enough to hold the text
+        	sprintf(scoreText, "Score: %d", x);
 
-        // Print the score text
-        printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
-
-		printText("Try Again?", 27, 90, RGBToWord(0,255,0),0);
-		printText("Press Down", 27, 100, RGBToWord(0,0,255),0);
-
-		
+        	// Print the score text
+       	 	printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
+			
+			// User instructions
+			printText("Try Again?", 27, 90, RGBToWord(0,255,0),0);
+			printText("Press Down", 27, 100, RGBToWord(0,0,255),0);
 
 			while  ((GPIOA->IDR & (1 << 11)) !=0 )
 			{
 		
-			delay(40);	
+				delay(40);	
 			
 			}
+
 		delay(100);
+
+		// Game restart functionality
 		startgame();
+
 	    }
 }
+
+// Function to Display Score 
 void DisplayScore(int x)
-{
-	char scoreText[20]; 
-        sprintf(scoreText, "Score: %u", x);
-
-        // Print the score text
-        printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
-
+{	
+	// Array to hold score, converting from uint to string, removes leading zeros 
+	char scoreText[20];
+    sprintf(scoreText, "Score: %u", x);
+	
+	// Print the score text
+    printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
 
 }
 
+// Turn On LED Function
 void LedOn(int Led)
 {
 	GPIOA->ODR = GPIOA->ODR | (1<<Led);
 }
 
+// Turn Off LED Function
 void LedOff(int Led)
 {	
 	GPIOA->ODR = GPIOA->ODR & ~(1<<Led);
 	
 }
 
-
-// Serial loggerger
+// Serial Monitior Log Function
 void logger(char log[])
 {
-    // Serial Commiunication
     //logger telling the user that the System has been intilised.
     int i = 0;
-    while(log[i] != '\0')
+    
+	while(log[i] != '\0')
     {
         eputchar(log[i]);
         i++;
     }
+
     eputs("\r\n");
 }
+
+// Light Animation Function as Game Starts
 void LightShow()
 {	
-	
+	LedOn(12);
+	delay(100);
+	LedOff(12);
+	LedOn(10);
+	delay(100);
+	LedOff(10);
+	LedOn(9);
+	delay(100);
+	LedOff(9);
+	delay(100);	
 
-		LedOn(12);
-		delay(100);
-		LedOff(12);
-		LedOn(10);
-		delay(100);
-		LedOff(10);
-		LedOn(9);
-		delay(100);
-		LedOff(9);
-		delay(100);
 }
+
+// Theme Song
 void playTheme()
-{
-	
+{	
+	// Notes of Song
 	int notes[] = { E4, G4, B4, A4, G4, B4, C5, B4, A4, G4,
     E4, D4, E4, G4, A4, A4, G4, F4, E4, D4};
 
-		int i = 0;
+	int i = 0;
 
-		for (i = 0 ; i < 21; i++)
+	for (i = 0 ; i < 21; i++)
+	{	
+		if(i == 20)
 		{	
-			if(i == 20)
-			{
-				i == 0;
+			// Loop
+			i == 0;
 				
-			}
-			else
-			{
+		}
+
+		else
+		{
+			
+			// Iterate through the notes 
 			playNote(notes[i]);
 			delay(500);
 			playNote(0);
-			}
-		
+
 		}
 		
-} 
+	}
+		
+}
+// Outro Chime Function 
 void playOutro()
-{
+{	
+	// Notes for chime
 	int notes[] = {C5,E4,G4,A5,F4,D4,B3};
 
 		int i = 0;
 
 		for (i = 0 ; i < 7; i++)
-		{	
+		{	// reset if needed
 			if(i == 6)
 			{
 				i == 0;
 				
 			}
+
 			else
 			{
 			playNote(notes[i]);
@@ -628,12 +740,13 @@ void playOutro()
 		}
 			
 }
+// Function to print highscore
 void HighScore (int score,int Highscore[5])
 {	
 	//Printing Highscore
 	char h_score[20];
 	sprintf(h_score, "Score: %u", score);
-	//print
+	//print highscore to screen
         printText(h_score, 33, 70, RGBToWord(0, 255, 255), 0);
 
 
