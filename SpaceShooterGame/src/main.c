@@ -6,6 +6,7 @@ Developed by Harry Shackleton & Joshua Sunil Mathew
 Microporcessors Module Coursework - TU857/2
 
 "A SIMPLE SPACE SHOOTER GAME WHERE A SPACESHIP AVOIDS/SHOOTS METEORS HEADED FOR IT"
+
 */
 
 // INCLUDES
@@ -26,17 +27,15 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-void endgame(int x);
-void printscore(int x);
+int endgame(int x);
 void startgame();
-void log(char log[]);
+void logger(char log[]);
 void game();
 void LightShow();
 void playTheme();
 void gameSetup();
-void LedOff();
 void LedOn();
-void HighScore(int x);
+
 // PREREQUISITE
 volatile uint32_t milliseconds;
 
@@ -70,6 +69,14 @@ const uint16_t dmg1[]=
 {
 	0,0,0,0,0,0,0,0,0,27482,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,27482,27482,3163,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,27482,120,120,25037,27482,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27482,50497,160,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,58093,33856,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9801,152,152,17066,34377,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,51986,26682,59209,128,128,17049,9793,27482,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42569,176,176,41914,50769,0,0,46612,0,0,0,0,0,0,0,0,0,27482,19290,27482,0,0,0,176,33466,34121,0,27482,27482,27482,0,0,0,0,0,0,0,0,27482,62364,62364,62364,1609,0,0,24961,0,0,62364,62364,27482,27482,0,0,0,0,0,3171,0,27482,62364,62364,29605,34361,61051,0,0,0,62364,62364,62364,27482,62364,0,0,0,0,27482,62364,0,27482,3584,3584,3584,25897,793,793,0,0,3584,3584,3584,27482,62364,0,27482,0,27482,62364,62364,0,27482,3584,3584,0,0,0,0,0,33800,0,3584,3584,27482,62364,62364,0,27482,2816,2816,2816,0,0,0,0,0,1577,19290,19290,36203,50465,0,0,0,2816,2816,2816,0,2816,0,0,0,0,0,62364,62364,62364,26161,36996,36996,28804,50473,62364,62364,0,0,0,0,0,0,0,0,0,0,0,50960,12544,61440,33544,10050,10050,59193,58112,45312,12288,26401,0,0,0,0,0,0,0,0,0,0,27755,28011,2114,29869,0,0,0,20355,11090,2642,44667,0,0,0,0,0,0,0,0,0,0,0,53273,21010,0,0,0,0,0,53273,4113,0,0,0,0,0,0,0,0,0,0,0,0,15873,57092,0,0,0,0,0,24066,16131,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
+const uint16_t met1[]=
+{
+	0,0,0,0,0,0,0,0,0,0,0,0,8192,520,0,0,0,0,0,0,58392,36682,62307,44098,33296,0,0,0,9497,62051,13676,5748,22124,12899,49152,0,33552,38260,13411,44362,27458,61266,29539,50977,0,59689,36162,52810,42793,25880,26921,60226,36674,8192,58120,2353,53074,43825,59433,18209,26921,44354,25616,16384,34865,42529,18217,42793,19530,35129,26145,25096,0,8976,34337,26145,27185,50985,51497,57872,0,0,0,8456,8456,26137,9753,1305,0,0,0,0,0,0,0,256,0,0,0,0,0,0,0,0,0,0,0,0,
+};
+const uint16_t met2[]=
+{
+	0,0,0,0,0,0,0,0,0,0,0,0,8192,520,0,0,0,0,0,0,49152,36682,62307,42008,256,0,0,0,256,57600,0,0,0,8192,49152,0,8192,0,0,40960,8192,8192,0,50977,0,59689,40960,520,57600,16384,0,32768,520,8192,58120,2353,35906,0,8456,0,26921,40960,40960,16384,34865,57600,24576,24576,0,35129,57600,8192,0,8976,0,26145,27185,0,0,8192,0,0,0,0,8456,26137,0,1305,0,0,0,0,0,0,0,8192,0,0,0,0,0,0,0,0,0,0,0,0,
+};
 
 int Highscores[5]={42,31,26,19,14};
 int *ptr = HighScore;
@@ -99,26 +106,10 @@ void game()
 
 	while(1)
 	{
-		int notes[] = {C5,E4,G4,A5,F4,D4,B3};
-
-		int i = 0;
-
-		for (i = 0 ; i < 7; i++)
-		{	
-			if(i == 6)
-			{
-				i=0;
-			}
-			else
-			{
-			playNote(notes[i]);
-			delay(100);
-			playNote(0);
-			}
-		}
+		
 
 		uint16_t projactive = 0; //Projectile toggle
-		char meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
+		int meteorActive[4]={0,0,0,0}; //meteor toggle, might make it able to create multiple using arrays just one for now
 		uint16_t meteorNum = 1;//Records the current amount of varables
 		
 		//for ship
@@ -145,22 +136,22 @@ void game()
 		uint16_t oldmety = 0;// only moves down so no need for x update
 
 		//score variable
+		char scorearray[20];
 		uint16_t score = 0;
 
-		//printNumber(score, 10,20,RGBToWord(255,255,255),0);
 
 		
-		char GameStartLog[] = {"Game has started"};
-		char MissileLog[] = {"Missile Hit"};
-		char ShipHitLog[] = {"Ship Hit!"};
+		char GameStartlogger[] = {"Game has started"};
+		char Missilelogger[] = {"Missile Hit"};
+		char ShipHitlogger[] = {"Ship Hit!"};
 		char LifeLost[] = {"Life Lost"};
-		char GameEndLog[] = {"Game has ended"};
+		char GameEndlogger[] = {"Game has ended"};
 
 		fillRectangle(0,0,127,159,RGBToWord(0,0,0));
 		putImage(x,y,21,21,virt,0,0); // Game starting point
 
-		// GAME START LOG
-		log(GameStartLog);
+		// GAME START logger
+		logger(GameStartlogger);
 			
 		
 		while(1)
@@ -204,6 +195,10 @@ void game()
 
 				case 25:
 					meteorNum=4;
+					break;
+
+				case 35:
+					meteorNum=5;
 					break;
 
 				default:
@@ -284,21 +279,22 @@ void game()
 			}
 
 			for(int i=0; i<meteorNum; i++){
-				if(meteorActive[i]){
+				if(meteorActive[i]==0){
 					meteorActive[i]=1;
-					printNumber(score, 90,10,RGBToWord(255,255,255),0);
+					sprintf(scorearray,"%u",score);
+					printTextX2(scorearray, 105, 10, RGBToWord(0, 255, 0), 0);
 					metx[i] = rand() % 80+10;  // Generate a random x-coordinate for the meteor
 					mety[i] = 5;
 				}
-				else{
+				else if(meteorActive[i]==1){
 					oldmety=mety[i];
 					mety[i]++;
-					fillRectangle(metx[i],oldmety,7,7,RGBToWord(0,0,0));
-					fillRectangle(metx[i],mety[i],7,7,RGBToWord(255,128,0));
+					putImage(metx[i],oldmety,9,12,met1,0,0);
+					putImage(metx[i],mety[i],9,12,met1,0,0);
 				
 					if(mety[i]>140)
 					{
-						fillRectangle(metx[i],mety[i],7,7,RGBToWord(0,0,0));
+						fillRectangle(metx[i],mety[i],9,12,RGBToWord(0,0,0));
 						meteorActive[i]=0;
 					}
 				}
@@ -306,9 +302,10 @@ void game()
 
 			//detects if the meteor has hit the ship
 			for(int i=0; i<meteorNum; i++){
-				if (isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) )
+				if (isInside(x-6,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) || isInside(x,y,21,21,metx[i],mety[i]) )
 					{	
-						log(ShipHitLog);
+						logger(ShipHitlogger);
+						logger(LifeLost);
 						//if you have lives left you lose them rather then losing the game
 						if(shields>0)
 						{   							
@@ -337,8 +334,8 @@ void game()
 							putImage(x,y,21,21,dmg,0,0); 
 							delay(100);
 							putImage(x,y,21,21,dmg1,0,0);
+							logger(GameEndlogger);
 							endgame(score);	
-							log(GameEndLog);
 							break;	
 						}
 										
@@ -347,14 +344,19 @@ void game()
 
 			for(int i=0; i<meteorNum; i++)
 			{
-				if (isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) || isInside(metx[i],mety[i],7,7,projx,projy) )
-				{
-					fillRectangle(metx[i],mety[i],30,30,RGBToWord(0,0,0)); // artefacting issue fix
+				if (isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) || isInside(metx[i],mety[i],10,10,projx,projy) )
+				{	
+
+					putImage(metx[i],mety[i],9,12,met1,0,0);
+					delay(100);
+					putImage(metx[i],mety[i],9,12,met2,0,0);
+					delay(90);
+					fillRectangle(metx[i],mety[i],40,40,RGBToWord(0,0,0)); // artefacting issue fix
 					playNote(A6);
 					delay(20);
 					playNote(0);
 					putImage(x,y,21,21,virt,0,0);
-					log(MissileLog);
+					logger(Missilelogger);
 					meteorActive[i]=0;
 					projactive=0;
 					projx=0;
@@ -463,37 +465,40 @@ void setupIO()
 void startgame()
 {
 	fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
-    
+	
 	while(1)
 		{
 		
 		LightShow();
-		
-	
         // DISPLAY TITLE	
         printTextX2("Space", 21, 20, RGBToWord(255, 0, 0), 0);
 		printTextX2("Shooter!", 21, 35, RGBToWord(255, 0, 255), 0);
-
+		
 		// PLAYER TITLE
 		printText("Press Down", 27, 90, RGBToWord(0, 255, 0), 0);
 		printText("to Begin!", 27, 100, RGBToWord(0, 0, 255), 0);
 		// AUTHOR
 		printText("by Harry & Josh", 17, 119, RGBToWord(0,255,0),0);
+		
+		//playTheme();
 
 		// when up is pressed, start the game
 		if  ((GPIOA->IDR & (1 << 11)) == 0)
 		{	
+			playOutro();
 			game();
 		}
-		}
+
+
+	}
 		
 }
 
-void endgame(int x)
+int endgame(int x)
 {
     fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
-    
-	HighScore(x,Highscores);
+    HighScore(x,Highscores);
+	
 	
 
 		while(1)
@@ -525,6 +530,16 @@ void endgame(int x)
 		startgame();
 	    }
 }
+void DisplayScore(int x)
+{
+	char scoreText[20]; 
+        sprintf(scoreText, "Score: %u", x);
+
+        // Print the score text
+        printText(scoreText, 33, 50, RGBToWord(0, 255, 0), 0);
+
+
+}
 
 void LedOn(int Led)
 {
@@ -538,11 +553,11 @@ void LedOff(int Led)
 }
 
 
-// Serial Logger
-void log(char log[])
+// Serial loggerger
+void logger(char log[])
 {
     // Serial Commiunication
-    //log telling the user that the System has been intilised.
+    //logger telling the user that the System has been intilised.
     int i = 0;
     while(log[i] != '\0')
     {
@@ -553,7 +568,7 @@ void log(char log[])
 }
 void LightShow()
 {	
-	//OPENING THEME LIGHSHOW
+	
 
 		LedOn(12);
 		delay(100);
@@ -568,19 +583,63 @@ void LightShow()
 }
 void playTheme()
 {
-	char notes[7][3] = {"C5", "D5", "E5", "F5", "G5", "A5", "B5"};
-    int delays[] = {500, 500, 500, 500, 500, 500, 500};  // in milliseconds
+	
+	int notes[] = { E4, G4, B4, A4, G4, B4, C5, B4, A4, G4,
+    E4, D4, E4, G4, A4, A4, G4, F4, E4, D4};
 
-    // Play the theme
-    for (size_t i = 0; i < sizeof(notes) / sizeof(notes[0]); i++) {
-        playNote(notes[i]);
-		delay(delays[i]);
-    }
-}
+		int i = 0;
 
-void HighScore (int score,int Highscore[5])
+		for (i = 0 ; i < 21; i++)
+		{	
+			if(i == 20)
+			{
+				i == 0;
+				
+			}
+			else
+			{
+			playNote(notes[i]);
+			delay(500);
+			playNote(0);
+			}
+		
+		}
+		
+} 
+void playOutro()
 {
-	for(int i=4;i>=0,i--)
+	int notes[] = {C5,E4,G4,A5,F4,D4,B3};
+
+		int i = 0;
+
+		for (i = 0 ; i < 7; i++)
+		{	
+			if(i == 6)
+			{
+				i == 0;
+				
+			}
+			else
+			{
+			playNote(notes[i]);
+			delay(100);
+			playNote(0);
+			}
+
+		}
+			
+}
+void HighScore (int score,int Highscore[5])
+{	
+	//Printing Highscore
+	char h_score[20];
+	sprintf(h_score, "Score: %u", score);
+	//print
+        printText(h_score, 33, 70, RGBToWord(0, 255, 255), 0);
+
+
+
+	for(int i=4;i>=0;i--)
 	{
 		if(score>HighScore[i])
 		{
