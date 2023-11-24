@@ -44,6 +44,8 @@ void playTheme();
 void playOutro();
 void gameSetup();
 void LedOn();
+void highscore(int score);
+int Highscores[5]={42,31,26,19,14};
 
 // PREREQUISITE
 volatile uint32_t milliseconds;
@@ -87,7 +89,6 @@ const uint16_t met2[]=
 	0,0,0,0,0,0,0,0,0,0,0,0,8192,520,0,0,0,0,0,0,49152,36682,62307,42008,256,0,0,0,256,57600,0,0,0,8192,49152,0,8192,0,0,40960,8192,8192,0,50977,0,59689,40960,520,57600,16384,0,32768,520,8192,58120,2353,35906,0,8456,0,26921,40960,40960,16384,34865,57600,24576,24576,0,35129,57600,8192,0,8976,0,26145,27185,0,0,8192,0,0,0,0,8456,26137,0,1305,0,0,0,0,0,0,0,8192,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-int Highscores[5]={42,31,26,19,14};
 
 
 // MAIN FUNCTION
@@ -591,7 +592,7 @@ int endgame(int x)
     fillRectangle(0, 0, 127, 159, RGBToWord(0, 0, 0));
     
 	// HIGH SCORE ##### NEEDS TO BE FIXED
-	HighScore(x,Highscores);
+	HighScore(x);
 
 		while(1)
 		{
@@ -742,21 +743,20 @@ void playOutro()
 			
 }
 // Function to print highscore
-void HighScore (int score,int Highscore[5])
+void HighScore (int score)
 {	
+	for(int i=4;i>=0;i--)
+	{
+		if(score > HighScore[i])
+		{
+			HighScore[i]=score;
+			i=0;
+			//print the words new high score if this passes
+		}
+	}
 	//Printing Highscore
 	char h_score[20];
 	sprintf(h_score, "Score: %u", score);
 	//print highscore to screen
         printText(h_score, 33, 70, RGBToWord(0, 255, 255), 0);
-
-
-
-	for(int i=4;i>=0;i--)
-	{
-		if(score>HighScore[i])
-		{
-			HighScore[i]=score;
-		}
-	}
 }
