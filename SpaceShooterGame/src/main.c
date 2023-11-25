@@ -88,7 +88,7 @@ const uint16_t met2[]=
 	0,0,0,0,0,0,0,0,0,0,0,0,8192,520,0,0,0,0,0,0,49152,36682,62307,42008,256,0,0,0,256,57600,0,0,0,8192,49152,0,8192,0,0,40960,8192,8192,0,50977,0,59689,40960,520,57600,16384,0,32768,520,8192,58120,2353,35906,0,8456,0,26921,40960,40960,16384,34865,57600,24576,24576,0,35129,57600,8192,0,8976,0,26145,27185,0,0,8192,0,0,0,0,8456,26137,0,1305,0,0,0,0,0,0,0,8192,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-
+int highscore1 = 0;
 
 // MAIN FUNCTION
 int main()
@@ -744,14 +744,14 @@ void playOutro()
 // Function to print highscore
 void HighScore (int score)
 {	
-		if(score > highscore)
+		if(score > highscore1)
 		{
-			int HighScore=score;
+			highscore1=score;
 			//print the words new high score if this passes
 		}
 	//Printing Highscore
 	char h_score[20];
-	sprintf(h_score, "Score: %u", score);
+	sprintf(h_score, "Highscore: %u",highscore1);
 	//print highscore to screen
-        printText(h_score, 33, 70, RGBToWord(0, 255, 255), 0);
+        printText(h_score, 19, 70, RGBToWord(0, 255, 255), 0);
 }
