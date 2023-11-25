@@ -45,7 +45,6 @@ void playOutro();
 void gameSetup();
 void LedOn();
 void highscore(int score);
-int Highscores[5]={42,31,26,19,14};
 
 // PREREQUISITE
 volatile uint32_t milliseconds;
@@ -745,15 +744,12 @@ void playOutro()
 // Function to print highscore
 void HighScore (int score)
 {	
-	for(int i=4;i>=0;i--)
-	{
-		if(score > HighScore[i])
+		if(score > highscore)
 		{
-			HighScore[i]=score;
+			HighScore=score;
 			i=0;
 			//print the words new high score if this passes
 		}
-	}
 	//Printing Highscore
 	char h_score[20];
 	sprintf(h_score, "Score: %u", score);
