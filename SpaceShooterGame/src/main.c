@@ -746,8 +746,7 @@ void HighScore (int score)
 {	
 		if(score > highscore)
 		{
-			HighScore=score;
-			i=0;
+			int HighScore=score;
 			//print the words new high score if this passes
 		}
 	//Printing Highscore
